@@ -134,29 +134,60 @@ class AgGrid extends Component {
   onGridReady = (params) => {
     this.gridApi = params.api;
     this.gridColumnApi = params.columnApi;
+    console.log(params.api);
+  };
+
+  gridOptions = {
+    // Callbacks can be used here OR in the gridOptions below
+    animateRows: false,
+    getRowHeight: (params) => {
+      console.log("FHERUIWOFWE");
+    },
+    //grid EVENTS can be used here with "on" https://www.ag-grid.com/javascript-grid-events/
+    ongetRowHeight: (node) => {
+      console.log(node);
+    },
+  };
+
+  getRowHeight = (params) => {
+    console.log(params);
+  };
+
+  rowClickedHandler = (event) => {
+    console.log(event.node);
+    event.node.setSelected(true); //the row node features can be accessed as well!
   };
 
   render() {
     return (
       <div style={{ width: "100%", height: "100%" }}>
-        <div
-          style={{
-            height: "100%",
-            width: "100%",
-          }}
-          className="ag-theme-alpine"
-        >
-          <AgGridReact
-            rowData={this.state.rowData}
-            columnDefs={this.state.columnDefs}
-            defaultColDef={this.state.defaultColDef}
-            autoGroupColumnDef={this.state.autoGroupColumnDef}
-            treeData={true}
-            animateRows={true}
-            groupDefaultExpanded={this.state.groupDefaultExpanded}
-            getDataPath={this.state.getDataPath}
-            onGridReady={this.onGridReady}
-          />
+        {/* <button onClick={() => this.gridOptions.ongetRowHeight()}>
+          Print Row Node Data
+        </button> */}
+        <div style={{ width: "100%", height: "100%" }}>
+          <div
+            style={{
+              height: "100%",
+              width: "100%",
+            }}
+            className="ag-theme-alpine"
+          >
+            <AgGridReact
+              //gridOptions THIS SET TAKES PRECEDENT COMPARED TO ABOVE
+              onRowClicked={this.rowClickedHandler.bind(this)}
+              getRowHeight={this.getRowHeight}
+              rowData={this.state.rowData}
+              columnDefs={this.state.columnDefs}
+              defaultColDef={this.state.defaultColDef}
+              autoGroupColumnDef={this.state.autoGroupColumnDef}
+              treeData={true}
+              animateRows={true}
+              groupDefaultExpanded={this.state.groupDefaultExpanded}
+              getDataPath={this.state.getDataPath}
+              onGridReady={this.onGridReady}
+              gridOptions={this.gridOptions}
+            />
+          </div>
         </div>
       </div>
     );
