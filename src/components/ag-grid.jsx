@@ -3,7 +3,11 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-enterprise";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-alpine.css";
-import "./style.css"
+
+let selectedNodes;
+function renderActions() {
+  return "<button>+</button>";
+}
 
 class AgGrid extends Component {
   constructor(props) {
@@ -90,6 +94,7 @@ class AgGrid extends Component {
         {
           orgHierarchy: [
             "Erica Rogers",
+
             "Malcolm Barrett",
             "Francis Strickland",
             "Todd Tyler",
@@ -118,7 +123,17 @@ class AgGrid extends Component {
           employmentType: "Permanent",
         },
       ],
-      columnDefs: [{ field: "jobTitle" }, { field: "employmentType" }],
+      columnDefs: [
+        {
+          lockPosition: true,
+          cellRenderer: renderActions,
+          // cellClass: 'locked-col',
+          maxWidth: 60,
+          // suppressNavigable: true,
+        },
+        { field: "jobTitle" },
+        { field: "employmentType" },
+      ],
       defaultColDef: { flex: 1 },
       autoGroupColumnDef: {
         headerName: "Organisation Hierarchy",
@@ -135,36 +150,21 @@ class AgGrid extends Component {
   onGridReady = (params) => {
     this.gridApi = params.api;
     this.gridColumnApi = params.columnApi;
-    console.log(params.api);
   };
 
   gridOptions = {
-    // Callbacks can be used here OR in the gridOptions below
-    animateRows: false,
-    getRowHeight: (params) => {
-      console.log("FHERUIWOFWE");
-    },
-    //grid EVENTS can be used here with "on" https://www.ag-grid.com/javascript-grid-events/
-    ongetRowHeight: (node) => {
-      console.log(node);
+    onRowClicked: (event) => {
+      let rowNode = event.node;
+      rowNode.setSelected(true);
+      selectedNodes = this.gridApi.getSelectedNodes();
+      console.log(selectedNodes);
     },
   };
 
-  getRowHeight = (params) => {
-    console.log(params);
-  };
-
-  rowClickedHandler = (event) => {
-    console.log(event.node);
-    event.node.setSelected(true); //the row node features can be accessed as well!
-  };
-
+  addNewRow = () => {};
   render() {
     return (
       <div style={{ width: "100%", height: "100%" }}>
-        {/* <button onClick={() => this.gridOptions.ongetRowHeight()}>
-          Print Row Node Data
-        </button> */}
         <div style={{ width: "100%", height: "100%" }}>
           <div
             style={{
@@ -175,18 +175,19 @@ class AgGrid extends Component {
           >
             <AgGridReact
               //gridOptions THIS SET TAKES PRECEDENT COMPARED TO ABOVE
-              onRowClicked={this.rowClickedHandler.bind(this)}
               getRowHeight={this.getRowHeight}
               rowData={this.state.rowData}
               columnDefs={this.state.columnDefs}
               defaultColDef={this.state.defaultColDef}
               autoGroupColumnDef={this.state.autoGroupColumnDef}
               treeData={true}
+              filterable={true}
               animateRows={true}
               groupDefaultExpanded={this.state.groupDefaultExpanded}
               getDataPath={this.state.getDataPath}
               onGridReady={this.onGridReady}
               gridOptions={this.gridOptions}
+              rowSelection={"multiple"}
             />
           </div>
         </div>
