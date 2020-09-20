@@ -3,11 +3,7 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-enterprise";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-alpine.css";
-
-let selectedNodes;
-function renderActions() {
-  return "<button>+</button>";
-}
+import FirstColButtons from "./HierarchyButtons/firstColButtons";
 
 class AgGrid extends Component {
   constructor(props) {
@@ -20,6 +16,7 @@ class AgGrid extends Component {
           jobTitle: "CEO",
           employmentType: "Permanent",
         },
+
         {
           orgHierarchy: ["Erica Rogers", "Malcolm Barrett"],
           jobTitle: "Exec. Vice President",
@@ -126,21 +123,33 @@ class AgGrid extends Component {
       columnDefs: [
         {
           lockPosition: true,
-          cellRenderer: renderActions,
+          cellRenderer: "firstColButtons",
           // cellClass: 'locked-col',
-          maxWidth: 60,
+          maxWidth: 100,
           // suppressNavigable: true,
         },
         { field: "jobTitle" },
         { field: "employmentType" },
       ],
-      defaultColDef: { flex: 1 },
+      frameworkComponents: {
+        firstColButtons: FirstColButtons,
+      },
+      defaultColDef: {
+        enableCellChangeFlash: true,
+        flex: 1,
+        editable: true,
+        valueSetter: function (params) {
+          console.log(params.data);
+          params.data.name = params.newValue;
+          return true;
+        },
+      },
       autoGroupColumnDef: {
         headerName: "Organisation Hierarchy",
+        rowDrag: true,
         minWidth: 300,
         cellRendererParams: { suppressCount: true },
       },
-      groupDefaultExpanded: -1,
       getDataPath: function (data) {
         return data.orgHierarchy;
       },
@@ -156,8 +165,9 @@ class AgGrid extends Component {
     onRowClicked: (event) => {
       let rowNode = event.node;
       rowNode.setSelected(true);
-      selectedNodes = this.gridApi.getSelectedNodes();
-      console.log(selectedNodes);
+      console.log(this.state.rowData);
+      // selectedNodes = this.gridApi.getSelectedNodes(); May be good for multi row functions
+      // console.log(selectedNodes);
     },
   };
 
@@ -165,31 +175,31 @@ class AgGrid extends Component {
   render() {
     return (
       <div style={{ width: "100%", height: "100%" }}>
-        <div style={{ width: "100%", height: "100%" }}>
-          <div
-            style={{
-              height: "100%",
-              width: "100%",
-            }}
-            className="ag-theme-alpine"
-          >
-            <AgGridReact
-              //gridOptions THIS SET TAKES PRECEDENT COMPARED TO ABOVE
-              getRowHeight={this.getRowHeight}
-              rowData={this.state.rowData}
-              columnDefs={this.state.columnDefs}
-              defaultColDef={this.state.defaultColDef}
-              autoGroupColumnDef={this.state.autoGroupColumnDef}
-              treeData={true}
-              filterable={true}
-              animateRows={true}
-              groupDefaultExpanded={this.state.groupDefaultExpanded}
-              getDataPath={this.state.getDataPath}
-              onGridReady={this.onGridReady}
-              gridOptions={this.gridOptions}
-              rowSelection={"multiple"}
-            />
-          </div>
+        <div
+          style={{
+            height: "100%",
+            width: "100%",
+          }}
+          className="ag-theme-alpine"
+        >
+          <AgGridReact
+            //gridOptions THIS SET TAKES PRECEDENT COMPARED TO ABOVE
+            getRowHeight={this.getRowHeight}
+            rowData={this.state.rowData}
+            columnDefs={this.state.columnDefs}
+            defaultColDef={this.state.defaultColDef}
+            autoGroupColumnDef={this.state.autoGroupColumnDef}
+            treeData={true}
+            filterable={true}
+            animateRows={true}
+            editable={true}
+            groupDefaultExpanded={-1}
+            getDataPath={this.state.getDataPath}
+            onGridReady={this.onGridReady}
+            gridOptions={this.gridOptions}
+            rowSelection={"multiple"}
+            frameworkComponents={this.state.frameworkComponents}
+          />
         </div>
       </div>
     );
