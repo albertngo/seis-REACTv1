@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+
 let i = 0;
 
 function createNewRowData({ orgHierarchy }, numEntries = 1) {
@@ -35,11 +36,8 @@ class FirstColButtons extends Component {
   }
 
   insertMutlipleHandler() {
-    let numEntries = 3;
-    //popupmodal - conditional statement to show or hide the component! (this component holds that state)
-    
-    //ask for number of entries
-    //submit and loop through a function to create the rows and add them (apply transaction)
+    let numEntries = 2;
+  
     let { data } = this.props;
     let newNodesArr = createNewRowData(data, numEntries);
 

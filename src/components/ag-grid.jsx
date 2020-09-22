@@ -4,6 +4,7 @@ import "ag-grid-enterprise";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-alpine.css";
 import FirstColButtons from "./HierarchyButtons/firstColButtons";
+// import InsMultiModal from "./HierarchyButtons/insMultiModal";
 
 class AgGrid extends Component {
   constructor(props) {
@@ -11,6 +12,32 @@ class AgGrid extends Component {
 
     this.state = {
       rowData: [
+        {
+          orgHierarchy: ["JJ Rogers"],
+          jobTitle: "CEO",
+          employmentType: "Permanent",
+        },
+
+        {
+          orgHierarchy: ["JJ Rogers", "Malcolm Barrett"],
+          jobTitle: "Exec. Vice President",
+          employmentType: "Permanent",
+        },
+        {
+          orgHierarchy: ["JJ Rogers", "Malcolm Barrett", "Esther Baker"],
+          jobTitle: "Director of Operations",
+          employmentType: "Permanent",
+        },
+        {
+          orgHierarchy: [
+            "JJ Rogers",
+            "Malcolm Barrett",
+            "Esther Baker",
+            "Brittany Hanson",
+          ],
+          jobTitle: "Fleet Coordinator",
+          employmentType: "Permanent",
+        },
         {
           orgHierarchy: ["Erica Rogers"],
           jobTitle: "CEO",
@@ -124,8 +151,9 @@ class AgGrid extends Component {
         {
           lockPosition: true,
           cellRenderer: "firstColButtons",
-          // cellClass: 'locked-col',
+          editable: false,
           maxWidth: 100,
+
           // suppressNavigable: true,
         },
         { field: "jobTitle" },
@@ -138,17 +166,20 @@ class AgGrid extends Component {
         enableCellChangeFlash: true,
         flex: 1,
         editable: true,
-        valueSetter: function (params) {
-          console.log(params.data);
-          params.data.name = params.newValue;
-          return true;
-        },
+        resizable: true,
       },
       autoGroupColumnDef: {
+        valueSetter: function (params) {
+          console.log(params.data);
+          return true;
+        },
         headerName: "Organisation Hierarchy",
         rowDrag: true,
         minWidth: 300,
-        cellRendererParams: { suppressCount: true },
+        cellRendererParams: {
+          suppressCount: true,
+          suppressDoubleClickExpand: true,
+        },
       },
       getDataPath: function (data) {
         return data.orgHierarchy;
@@ -165,9 +196,31 @@ class AgGrid extends Component {
     onRowClicked: (event) => {
       let rowNode = event.node;
       rowNode.setSelected(true);
-      console.log(this.state.rowData);
-      // selectedNodes = this.gridApi.getSelectedNodes(); May be good for multi row functions
-      // console.log(selectedNodes);
+      // console.log(event);
+    },
+
+    onRowDragMove: (event) => {
+      setPotentialParentForNode(event);
+    },
+
+    // onRowDragLeave: (event) => {
+    //   setPotentialParentForNode(event.api, null);
+    // },
+
+    onRowDragEnd: (event) => {
+      let nodeHierarchy = event.node.data.orgHierarchy;
+      let rowsToRefresh = [];
+      let newParentPath = potentialParent.data.orgHierarchy;
+      if (potentialParent) {
+        //get the last entry of the moved node
+        let lastEntry = [nodeHierarchy[nodeHierarchy.length - 1]];
+
+        //combine the arrays
+        let newPath = newParentPath.concat(lastEntry);
+        event.node.data.orgHierarchy = newPath;
+        console.log(event.node);
+        this.gridApi.applyTransaction({ update: [event.node.data] });
+      }
     },
   };
 
@@ -193,6 +246,9 @@ class AgGrid extends Component {
             filterable={true}
             animateRows={true}
             editable={true}
+            rowDragManaged={true}
+            enableMultiRowDragging={true}
+            suppressMoveWhenRowDragging={true}
             groupDefaultExpanded={-1}
             getDataPath={this.state.getDataPath}
             onGridReady={this.onGridReady}
@@ -204,6 +260,27 @@ class AgGrid extends Component {
       </div>
     );
   }
+}
+function setPotentialParentForNode({ api, node, overNode }) {
+  var newPotentialParent;
+  if (node === overNode) return;
+  else {
+    //set it as the new parent node
+    console.log("New Parent Selected");
+    newPotentialParent = overNode;
+    potentialParent = newPotentialParent;
+    console.log(potentialParent);
+  }
+}
+var potentialParent = null;
+
+function refreshRows(api, rowsToRefresh) {
+  var params = {
+    // rowNodes: rowsToRefresh,
+    force: true,
+  };
+  api.refreshCells(params);
+  // api.redrawRows();
 }
 
 export default AgGrid;
