@@ -37,7 +37,7 @@ class FirstColButtons extends Component {
 
   insertMutlipleHandler() {
     let numEntries = 2;
-  
+
     let { data } = this.props;
     let newNodesArr = createNewRowData(data, numEntries);
 

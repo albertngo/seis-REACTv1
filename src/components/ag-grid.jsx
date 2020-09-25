@@ -175,6 +175,8 @@ class AgGrid extends Component {
         },
         headerName: "Organisation Hierarchy",
         rowDrag: true,
+        // groupSelectsChildren: true,
+        // checkboxSelection: true,
         minWidth: 300,
         cellRendererParams: {
           suppressCount: true,
@@ -196,30 +198,24 @@ class AgGrid extends Component {
     onRowClicked: (event) => {
       let rowNode = event.node;
       rowNode.setSelected(true);
-      // console.log(event);
     },
 
     onRowDragMove: (event) => {
       setPotentialParentForNode(event);
     },
 
-    // onRowDragLeave: (event) => {
-    //   setPotentialParentForNode(event.api, null);
-    // },
-
     onRowDragEnd: (event) => {
       let nodeHierarchy = event.node.data.orgHierarchy;
-      let rowsToRefresh = [];
       let newParentPath = potentialParent.data.orgHierarchy;
       if (potentialParent) {
         //get the last entry of the moved node
         let lastEntry = [nodeHierarchy[nodeHierarchy.length - 1]];
-
         //combine the arrays
         let newPath = newParentPath.concat(lastEntry);
         event.node.data.orgHierarchy = newPath;
         console.log(event.node);
         this.gridApi.applyTransaction({ update: [event.node.data] });
+        refreshRows(event.api, [event.node]);
       }
     },
   };
@@ -276,7 +272,7 @@ var potentialParent = null;
 
 function refreshRows(api, rowsToRefresh) {
   var params = {
-    // rowNodes: rowsToRefresh,
+    rowNodes: rowsToRefresh,
     force: true,
   };
   api.refreshCells(params);

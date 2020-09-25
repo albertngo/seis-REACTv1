@@ -1,13 +1,19 @@
-FROM node:current-slim
+FROM node:current-slim as build
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-COPY package.json . 
+COPY package*.json ./
 
 RUN npm install
 
 COPY . .
 
-EXPOSE 3000
+RUN npm run build
 
-CMD ["npm", "start"]
+# production environment
+FROM nginx:stable-alpine
+COPY --from=build /app/build /usr/share/nginx/html
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
